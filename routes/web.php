@@ -16,7 +16,6 @@ Route::get('/produits/{produit}', [ProduitController::class, 'show'])->name('pro
 
 // Route de tableau de bord (redirection vers la page appropriée selon le rôle)
 Route::middleware('auth')->get('/dashboard', function () {
-    // Utiliser Auth::user() au lieu de auth()->user()
     if (Auth::user()->role === 'gestionnaire') {
         return redirect()->route('commandes.index');
     } else {
@@ -59,6 +58,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/commandes/{commande}/paiements/create', [PaiementController::class, 'create'])->name('paiements.create');
         Route::post('/commandes/{commande}/paiements', [PaiementController::class, 'store'])->name('paiements.store');
         Route::get('/paiements/{paiement}', [PaiementController::class, 'show'])->name('paiements.show');
+        
+        // Statistiques
+        Route::get('/statistiques', [CommandeController::class, 'statistiques'])->name('commandes.statistiques');
     });
 });
 

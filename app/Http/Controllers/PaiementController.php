@@ -7,11 +7,17 @@ use App\Models\Paiement;
 use App\Models\Statut;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class PaiementController extends Controller
 {
     public function create(Commande $commande)
     {
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
         if ($commande->paiement) {
             return redirect()->route('commandes.show', $commande)
                 ->with('error', 'Cette commande a déjà été payée.');
@@ -27,6 +33,11 @@ class PaiementController extends Controller
 
     public function store(Request $request, Commande $commande)
     {
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
         if ($commande->paiement) {
             return redirect()->route('commandes.show', $commande)
                 ->with('error', 'Cette commande a déjà été payée.');
@@ -67,6 +78,11 @@ class PaiementController extends Controller
 
     public function show(Paiement $paiement)
     {
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
         return view('paiements.show', compact('paiement'));
     }
 }
