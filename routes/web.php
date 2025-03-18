@@ -14,6 +14,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/catalogue', [ProduitController::class, 'catalogue'])->name('catalogue');
 Route::get('/produits/{produit}/details', [ProduitController::class, 'details'])->name('produits.details');
 
+Route::get('/auth/google', [App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])
+    ->name('auth.google');
+Route::get('/auth/google/callback', [App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback']);
 // Route de tableau de bord (redirection vers la page appropriée selon le rôle)
 Route::middleware('auth')->get('/dashboard', function () {
     if (Auth::user()->role === 'gestionnaire') {

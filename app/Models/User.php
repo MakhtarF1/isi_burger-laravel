@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+// Imports...
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -19,8 +20,10 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'role',
         'password',
+        'role',
+        'google_id',
+        'avatar',
     ];
 
     /**
@@ -42,6 +45,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
 
     /**
      * Vérifie si l'utilisateur est un gestionnaire.
