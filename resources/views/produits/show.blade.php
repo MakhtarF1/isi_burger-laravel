@@ -1,47 +1,54 @@
 @extends('layouts.app')
 
-@section('title', $produit->nom)
-
 @section('content')
-<div class="row">
-    <div class="col-md-6">
-        @if($produit->image)
-            <img src="{{ asset('storage/' . $produit->image) }}" class="img-fluid rounded" alt="{{ $produit->nom }}">
-        @else
-            <img src="https://via.placeholder.com/600x400?text=ISI+BURGER" class="img-fluid rounded" alt="Placeholder">
-        @endif
-    </div>
-    <div class="col-md-6">
-        <h1>{{ $produit->nom }}</h1>
-        <p class="badge bg-secondary">{{ $produit->categorie->nom }}</p>
-        <p class="fs-4 fw-bold text-primary">{{ number_format($produit->prix, 2, ',', ' ') }} €</p>
-        <p>{{ $produit->description }}</p>
-        
-        @if($produit->disponible && $produit->stock > 0)
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> Produit disponible
-                <span class="badge bg-primary ms-2">Stock: {{ $produit->stock }}</span>
-            </div>
-            <form action="{{ route('commandes.create') }}" method="GET">
-                <input type="hidden" name="produit_id" value="{{ $produit->id }}">
-                <div class="mb-3">
-                    <label for="quantite" class="form-label">Quantité</label>
-                    <input type="number" class="form-control" id="quantite" name="quantite" value="1" min="1" max="{{ $produit->stock }}">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Détails du produit</h5>
+                    <div>
+                        <a href="{{ route('produits.edit', $produit) }}" class="btn btn-warning">Modifier</a>
+                        <a href="{{ route('produits.index') }}" class="btn btn-secondary">Retour à la liste</a>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-shopping-cart me-2"></i> Ajouter au panier
-                </button>
-            </form>
-        @else
-            <div class="alert alert-danger">
-                <i class="fas fa-times-circle"></i> Produit indisponible
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @if ($produit->image)
+                                <img src="{{ asset('storage/' . $produit->image) }}" alt="{{ $produit->nom }}" class="img-fluid rounded">
+                            @else
+                                <div class="text-center p-5 bg-light rounded">
+                                    <span class="text-muted">Aucune image</span>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="col-md-8">
+                            <h3>{{ $produit->nom }}</h3>
+                            <p class="text-muted">Catégorie: {{ $produit->categorie->nom }}</p>
+                            <p class="h4">{{ number_format($produit->prix, 2, ',', ' ') }} €</p>
+                            
+                            <div class="mt-3">
+                                <p><strong>Stock:</strong> {{ $produit->stock }}</p>
+                                <p>
+                                    <strong>Disponibilité:</strong>
+                                    @if ($produit->disponible)
+                                        <span class="badge bg-success">Disponible</span>
+                                    @else
+                                        <span class="badge bg-danger">Indisponible</span>
+                                    @endif
+                                </p>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h5>Description</h5>
+                                <p>{{ $produit->description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        @endif
-        
-        <div class="mt-4">
-            <a href="{{ route('catalogue') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i> Retour au catalogue
-            </a>
         </div>
     </div>
 </div>

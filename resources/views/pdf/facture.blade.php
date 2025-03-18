@@ -149,19 +149,16 @@
             <p>
                 @if($commande->paiement)
                     Payé le {{ $commande->paiement->created_at->format('d/m/Y') }}<br>
-                    Méthode de paiement : {{ $commande->paiement->methode_paiement }}
-                    @if($commande->paiement->reference_paiement)
-                    <br>Référence : {{ $commande->paiement->reference_paiement }}
-                    @endif
+                    Méthode de paiement : {{ $commande->paiement->methode_paiement }}<br>
+                    Transaction ID : {{ $commande->paiement->transaction_id }}
                 @else
-                    En attente de paiement
+                    Non payé
                 @endif
             </p>
         </div>
-        
+
         <div class="footer">
-            <p>ISI BURGER - SIRET: 123 456 789 00012 - TVA: FR12345678900</p>
-            <p>Merci pour votre confiance !</p>
+            <p>Merci pour votre commande !<br>Nous espérons vous revoir bientôt chez ISI BURGER.</p>
         </div>
     </div>
 </body>

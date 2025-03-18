@@ -15,57 +15,60 @@ class CommandeFacture extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     /**
-     * La commande.
+     * L'ID de la commande.
      */
-    public $commande;
+    public $commandeId;
 
     /**
-     * Create a new message instance.
+     * Créer une nouvelle instance de message.
+     *
+     * @param Commande $commande
      */
     public function __construct(Commande $commande)
     {
         // Stocker l'ID de la commande plutôt que l'objet complet pour éviter les problèmes de sérialisation
-        $this->commande = $commande->id;
+        $this->commandeId = $commande->id;
     }
 
     /**
-     * Build the message.
+     * Construire le message.
      */
     public function build()
     {
         try {
-            // Récupérer la commande complète avec ses relations au moment de l'envoi
-            $commande = Commande::with(['user', 'statut', 'produits', 'paiement'])->findOrFail($this->commande);
-            
-            // Vérifier que toutes les relations sont chargées
+            // Récupérer la commande complète avec ses relations
+            $commande = Commande::with(['user', 'statut', 'produits', 'paiement'])->findOrFail($this->commandeId);
+
+            // Vérifier que toutes les relations nécessaires sont chargées
             if (!$commande->user || !$commande->statut || !$commande->produits) {
                 throw new \Exception("Relations de commande manquantes");
             }
-            
-            // Générer le PDF avec un try/catch spécifique
+
+            // Générer le PDF de la facture
             try {
                 $pdf = PDF::loadView('pdf.facture', ['commande' => $commande]);
-                
-                // Vérifier que le PDF a été généré correctement
+
+                // Vérifier si le PDF a bien été généré
                 if (!$pdf) {
                     throw new \Exception("Échec de la génération du PDF");
                 }
-                
+
                 $pdfOutput = $pdf->output();
-                
-                // Vérifier que le PDF a un contenu
+
+                // Vérifier que le PDF contient bien du contenu
                 if (empty($pdfOutput)) {
                     throw new \Exception("Le PDF généré est vide");
                 }
-                
-                // Enregistrer le PDF dans le stockage pour référence future
+
+                // Enregistrer le PDF dans le stockage public pour la référence future
                 $pdfPath = storage_path('app/public/factures');
                 if (!file_exists($pdfPath)) {
-                    mkdir($pdfPath, 0755, true);
+                    mkdir($pdfPath, 0755, true); // Créer le répertoire si nécessaire
                 }
-                
-                file_put_contents($pdfPath . '/facture-' . $commande->numero_commande . '.pdf', $pdfOutput);
-                
+
+                $pdfFilePath = $pdfPath . '/facture-' . $commande->numero_commande . '.pdf';
+                file_put_contents($pdfFilePath, $pdfOutput);
+
                 // Attacher le PDF à l'email
                 return $this->subject('Facture pour votre commande #' . $commande->numero_commande)
                             ->view('emails.commandes.facture', ['commande' => $commande])
@@ -73,16 +76,18 @@ class CommandeFacture extends Mailable implements ShouldQueue
                                 'mime' => 'application/pdf',
                             ]);
             } catch (\Exception $pdfError) {
-                Log::error('Erreur spécifique à la génération du PDF: ' . $pdfError->getMessage());
+                // Log l'erreur spécifique à la génération du PDF
+                Log::error('Erreur lors de la génération du PDF pour la commande #' . $this->commandeId . ': ' . $pdfError->getMessage());
                 throw $pdfError;
             }
         } catch (\Exception $e) {
-            Log::error('Erreur dans CommandeFacture::build: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            
-            // Récupérer la commande pour l'email sans PDF
-            $commande = Commande::with(['user', 'statut'])->findOrFail($this->commande);
-            
-            // Envoyer l'email sans la pièce jointe en cas d'erreur
+            // Log des erreurs dans le processus global
+            Log::error('Erreur dans CommandeFacture::build pour la commande #' . $this->commandeId . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            // Récupérer la commande sans le PDF si une erreur survient
+            $commande = Commande::with(['user', 'statut'])->findOrFail($this->commandeId);
+
+            // Envoyer l'email sans le PDF en cas d'erreur
             return $this->subject('Facture pour votre commande #' . $commande->numero_commande)
                         ->view('emails.commandes.facture', ['commande' => $commande]);
         }

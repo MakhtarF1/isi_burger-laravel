@@ -30,7 +30,7 @@
                 <h5 class="card-title">{{ $produit->nom }}</h5>
                 <p class="card-text text-truncate">{{ $produit->description }}</p>
                 <p class="card-text fw-bold">{{ number_format($produit->prix, 2, ',', ' ') }} €</p>
-                <a href="{{ route('produits.details', $produit) }}" class="btn btn-sm btn-primary">Voir détails</a>
+                <a href="{{ route('produits.show', $produit) }}" class="btn btn-sm btn-primary">Voir détails</a>
             </div>
         </div>
     </div>

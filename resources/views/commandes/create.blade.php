@@ -15,13 +15,13 @@
                 </div>
                 <div class="card-body">
                     <div id="produits-container">
-                        @if(request()->has('produit_id'))
+                        @if(isset($produitSelectionne))
                             <div class="row mb-3 produit-row">
                                 <div class="col-md-6">
                                     <select name="produits[]" class="form-select produit-select" required>
                                         @foreach($produits as $produit)
                                             <option value="{{ $produit->id }}" 
-                                                {{ request('produit_id') == $produit->id ? 'selected' : '' }}
+                                                {{ $produitSelectionne->id == $produit->id ? 'selected' : '' }}
                                                 data-prix="{{ $produit->prix }}"
                                                 data-stock="{{ $produit->stock }}">
                                                 {{ $produit->nom }} - {{ number_format($produit->prix, 2, ',', ' ') }} €
@@ -31,11 +31,11 @@
                                 </div>
                                 <div class="col-md-3">
                                     <input type="number" name="quantites[]" class="form-control quantite-input" 
-                                        value="{{ request('quantite', 1) }}" min="1" max="{{ $produits->find(request('produit_id'))->stock ?? 100 }}" required>
+                                        value="{{ request('quantite', 1) }}" min="1" max="{{ $produitSelectionne->stock }}" required>
                                 </div>
                                 <div class="col-md-2">
                                     <span class="sous-total">
-                                        {{ number_format(($produits->find(request('produit_id'))->prix ?? 0) * request('quantite', 1), 2, ',', ' ') }} €
+                                        {{ number_format($produitSelectionne->prix * request('quantite', 1), 2, ',', ' ') }} €
                                     </span>
                                 </div>
                                 <div class="col-md-1">
@@ -179,7 +179,6 @@
             // Ajouter les écouteurs d'événements pour la nouvelle ligne
             const select = produitRow.querySelector('.produit-select');
             const quantiteInput = produitRow.querySelector('.quantite-input');
-            const sousTotalSpan = produitRow.querySelector('.sous-total');
             
             select.addEventListener('change', function() {
                 if (this.value) {

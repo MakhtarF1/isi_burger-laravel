@@ -4,66 +4,124 @@ namespace App\Http\Controllers;
 
 use App\Models\Categorie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CategorieController extends Controller
 {
+    /**
+     * Affiche la liste des catégories
+     */
     public function index()
     {
-        $categories = Categorie::all();
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
+        $categories = Categorie::withCount('produits')->get();
         return view('categories.index', compact('categories'));
     }
 
+    /**
+     * Affiche le formulaire de création d'une catégorie
+     */
     public function create()
     {
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
         return view('categories.create');
     }
 
+    /**
+     * Enregistre une nouvelle catégorie
+     */
     public function store(Request $request)
     {
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
         $validated = $request->validate([
             'nom' => 'required|string|max:255|unique:categories',
             'description' => 'nullable|string',
         ]);
-
-        Categorie::create($validated);
-
+        
+        $categorie = Categorie::create($validated);
+        
         return redirect()->route('categories.index')
             ->with('success', 'Catégorie créée avec succès.');
     }
 
-    public function show(Categorie $categorie)
+    /**
+     * Affiche les détails d'une catégorie
+     */
+    public function show(Categorie $category)
     {
-        return view('categories.show', compact('categorie'));
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
+        $category->load('produits');
+        return view('categories.show', compact('category'));
     }
 
-    public function edit(Categorie $categorie)
+    /**
+     * Affiche le formulaire de modification d'une catégorie
+     */
+    public function edit(Categorie $category)
     {
-        return view('categories.edit', compact('categorie'));
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
+        return view('categories.edit', compact('category'));
     }
 
-    public function update(Request $request, Categorie $categorie)
+    /**
+     * Met à jour une catégorie
+     */
+    public function update(Request $request, Categorie $category)
     {
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
         $validated = $request->validate([
-            'nom' => 'required|string|max:255|unique:categories,nom,' . $categorie->id,
+            'nom' => 'required|string|max:255|unique:categories,nom,' . $category->id,
             'description' => 'nullable|string',
         ]);
-
-        $categorie->update($validated);
-
+        
+        $category->update($validated);
+        
         return redirect()->route('categories.index')
             ->with('success', 'Catégorie mise à jour avec succès.');
     }
 
-    public function destroy(Categorie $categorie)
+    /**
+     * Supprime une catégorie
+     */
+    public function destroy(Categorie $category)
     {
+        // Vérifier si l'utilisateur est un gestionnaire
+        if (Auth::user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        
         // Vérifier si la catégorie a des produits
-        if ($categorie->produits()->count() > 0) {
+        if ($category->produits()->count() > 0) {
             return redirect()->route('categories.index')
                 ->with('error', 'Impossible de supprimer cette catégorie car elle contient des produits.');
         }
-
-        $categorie->delete();
-
+        
+        $category->delete();
+        
         return redirect()->route('categories.index')
             ->with('success', 'Catégorie supprimée avec succès.');
     }
